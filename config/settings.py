@@ -6,11 +6,11 @@ Every module imports from here — never read os.environ directly elsewhere.
 """
 
 import os
+from pathlib import Path
 from dotenv import load_dotenv
-
+env_path = Path(__file__).parent / ".env"
 # Load .env file (ignored if env vars are already set, e.g. in Docker)
-load_dotenv()
-
+load_dotenv(dotenv_path=env_path, override=True)
 # ─────────────────────────────────────────────
 # HELPER
 # ─────────────────────────────────────────────
@@ -33,8 +33,8 @@ def _get(key: str, default: str = "") -> str:
 # ZERODHA KITE CONNECT
 # ─────────────────────────────────────────────
 
-KITE_API_KEY      = _require("KITE_API_KEY")
-KITE_API_SECRET   = _require("KITE_API_SECRET")
+KITE_API_KEY      = _get("KITE_API_KEY")
+KITE_API_SECRET   = _get("KITE_API_SECRET")
 KITE_ACCESS_TOKEN = _get("KITE_ACCESS_TOKEN")   # refreshed daily via login flow
 KITE_BASE_URL     = _get("KITE_BASE_URL", "https://api.kite.trade")
 
@@ -46,7 +46,7 @@ TRADING_MODE = _get("TRADING_MODE", "paper")   # "paper" | "live"
 # NEWS SOURCES
 # ─────────────────────────────────────────────
 
-NEWSAPI_KEY         = _require("NEWSAPI_KEY")
+NEWSAPI_KEY         = _get("NEWSAPI_KEY")
 TWITTER_BEARER_TOKEN = _get("TWITTER_BEARER_TOKEN")   # optional
 
 

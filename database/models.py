@@ -13,6 +13,7 @@ Tables:
   7. daily_pnl       — end-of-day summary for reporting
 """
 
+import contextlib
 from datetime import datetime
 from sqlalchemy import (
     Column, Integer, String, Float, Boolean,
@@ -318,7 +319,7 @@ engine = create_engine(
 
 SessionLocal = sessionmaker(bind=engine, autocommit=False, autoflush=False)
 
-
+@contextlib.contextmanager
 def get_db():
     """
     Dependency-injection style session getter.
