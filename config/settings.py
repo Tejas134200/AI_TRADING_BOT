@@ -100,6 +100,7 @@ AI_BATCH_SIZE = int(_get("AI_BATCH_SIZE", "8"))         # articles per inference
 
 # LLM fallback (optional — Ollama local or Claude API)
 LLM_PROVIDER  = _get("LLM_PROVIDER", "none")            # "ollama" | "anthropic" | "none"
+GROQ_API_KEY = _get("GROQ_API_KEY","")
 OLLAMA_URL    = _get("OLLAMA_URL", "http://localhost:11434")
 ANTHROPIC_API_KEY = _get("ANTHROPIC_API_KEY", "")
 

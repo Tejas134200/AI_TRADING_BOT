@@ -25,3 +25,4 @@ lxml==5.2.1          # faster XML parser for feedparser
 transformers
 torch
 spacy
+groq
