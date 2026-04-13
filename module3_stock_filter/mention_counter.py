@@ -18,11 +18,12 @@ import logging
 from typing import Dict, List
 
 from config.settings import FILTER_MIN_MENTION_COUNT
+from config.settings import MIN_SOURCE_DIVERSITY
 from module3_stock_filter.score_aggregator import AggregatedScore
 
 logger = logging.getLogger(__name__)
 
-MIN_SOURCE_DIVERSITY = 2   # at least 2 distinct sources must mention the stock
+  # at least 2 distinct sources must mention the stock
 
 
 def filter_by_mentions(

@@ -195,6 +195,10 @@ def process_queue():
     )
     from database.models import Article as ArticleModel
     from database.connection import get_db
+    from module2_ai_engine.llm_analyzer import reset_call_counter
+
+    # Reset LLM call counter for this pipeline run
+    reset_call_counter()
 
     # Connect to Redis
     try:

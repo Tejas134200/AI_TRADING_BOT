@@ -43,14 +43,6 @@ class AggregatedScore:
 
 
 def aggregate(window_hours: int = 2) -> Dict[str, AggregatedScore]:
-    """
-    Query MySQL scored_articles for the last `window_hours` hours,
-    group by ticker, compute aggregated scores.
-
-    Returns
-    -------
-    Dict of ticker → AggregatedScore, sorted by avg_score descending
-    """
     from database.models import ScoredArticle, Article
     from database.connection import get_db
 
@@ -58,6 +50,8 @@ def aggregate(window_hours: int = 2) -> Dict[str, AggregatedScore]:
     window_end   = datetime.utcnow()
 
     results: Dict[str, AggregatedScore] = {}
+    ticker_data: Dict[str, dict] = {} # Initialize outside to use later
+    total_rows = 0
 
     try:
         with get_db() as db:
@@ -68,31 +62,33 @@ def aggregate(window_hours: int = 2) -> Dict[str, AggregatedScore]:
                 .all()
             )
 
-        if not rows:
-            logger.info("[aggregator] No scored articles in window")
-            return {}
+            if not rows:
+                logger.info("[aggregator] No scored articles in window")
+                return {}
 
-        # Group by ticker
-        ticker_data: Dict[str, dict] = {}
-        for scored, article in rows:
-            t = scored.ticker
-            if t not in ticker_data:
-                ticker_data[t] = {
-                    "exchange"   : scored.exchange,
-                    "scores"     : [],
-                    "sentiments" : [],
-                    "sources"    : set(),
-                }
-            ticker_data[t]["scores"].append(scored.final_score)
-            ticker_data[t]["sentiments"].append(scored.sentiment)
-            ticker_data[t]["sources"].add(article.source)
+            total_rows = len(rows)
 
-        # Build AggregatedScore per ticker
+            # --- MOVE GROUPING LOGIC INSIDE THE 'WITH' BLOCK ---
+            for scored, article in rows:
+                t = scored.ticker
+                if t not in ticker_data:
+                    ticker_data[t] = {
+                        "exchange"   : scored.exchange,
+                        "scores"     : [],
+                        "sentiments" : [],
+                        "sources"    : set(),
+                    }
+                # Accessing these attributes while 'db' session is alive
+                ticker_data[t]["scores"].append(scored.final_score)
+                ticker_data[t]["sentiments"].append(scored.sentiment)
+                ticker_data[t]["sources"].add(article.source)
+            # --- END OF INSIDE THE 'WITH' BLOCK ---
+
+        # Build AggregatedScore per ticker (Safe outside now because we have plain lists)
         for ticker, data in ticker_data.items():
             scores = data["scores"]
             avg    = round(sum(scores) / len(scores), 4)
 
-            # Trend: compare first half avg vs second half avg
             mid   = len(scores) // 2
             trend = 0.0
             if mid > 0:
@@ -100,7 +96,6 @@ def aggregate(window_hours: int = 2) -> Dict[str, AggregatedScore]:
                 second_half = sum(scores[mid:]) / (len(scores) - mid)
                 trend = round(second_half - first_half, 4)
 
-            # Most common sentiment
             top_sentiment = max(
                 set(data["sentiments"]),
                 key=data["sentiments"].count
@@ -121,11 +116,10 @@ def aggregate(window_hours: int = 2) -> Dict[str, AggregatedScore]:
 
         logger.info(
             f"[aggregator] {len(results)} tickers aggregated "
-            f"from {len(rows)} articles in last {window_hours}h"
+            f"from {total_rows} articles in last {window_hours}h"
         )
 
     except Exception as e:
         logger.error(f"[aggregator] DB query failed: {e}")
 
-    # Sort by avg_score descending
     return dict(sorted(results.items(), key=lambda x: x[1].avg_score, reverse=True))

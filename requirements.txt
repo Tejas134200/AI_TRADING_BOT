@@ -30,3 +30,4 @@ groq
 #Module 3
 kiteconnect
 pandas
+yfinance

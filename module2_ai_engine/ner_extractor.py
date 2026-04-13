@@ -126,7 +126,9 @@ def _scan_uppercase(text: str) -> Optional[str]:
         "NSE", "BSE", "RBI", "SEBI", "IPO", "FII", "FPI", "GDP",
         "CEO", "CFO", "CTO", "MD", "AGM", "EGM", "QIP", "OFS",
         "Q1", "Q2", "Q3", "Q4", "FY", "YOY", "QOQ", "PAT", "EBITDA",
-        "IT", "AI", "ML", "US", "UK", "EU", "IN", "INR", "USD",
+        "MPC", "DTH", "SME", "CPI", "US", "UK", "EU", "INR", "USD",
+        "M&A", "F&B", "DII", "NIFTY", "SENSEX", "NIFTY50", "BOARD",
+        "VCCIRCLE", "BLACKSTONE", "KFC", "BUDGET", "SHELL", "OPD"
     }
     for candidate in candidates:
         if candidate not in skip:
